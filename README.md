@@ -1,6 +1,6 @@
-![alt text](image.png)
+![alt text](dashboard.png)
 
-![alt text](image-1.png)
+![alt text](dashboard2.png)
 
 # Ames Housing MLOps Pipeline & Serving System
 

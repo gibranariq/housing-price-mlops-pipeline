@@ -1,3 +1,7 @@
+![alt text](image.png)
+
+![alt text](image-1.png)
+
 # Ames Housing MLOps Pipeline & Serving System
 
 Sistem MLOps end-to-end untuk prediksi harga properti di Ames, Iowa. Proyek ini memisahkan UI Frontend berbasis Streamlit dengan serving backend berbasis FastAPI, dilengkapi dengan pelacakan eksperimen MLflow, containerisasi Docker, monitoring penyimpangan data (concept drift), dan pemicu pelatihan ulang otomatis (automated retraining).

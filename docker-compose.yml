@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Training service - run once on-demand to train & register model in registry
+  trainer:
+    build: .
+    container_name: ames-trainer
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./logs:/app/logs
+      - ./data:/app/data
+    command: python src/train.py data/train.csv
+    profiles:
+      - train
+
+  # Prediction API (FastAPI)
+  predictor:
+    build: .
+    container_name: ames-predictor
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./logs:/app/logs
+      - ./data:/app/data
+    environment:
+      - MODEL_VERSION=latest
+      - PYTHONUNBUFFERED=1
+    command: python src/predict.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Streamlit Frontend UI
+  frontend:
+    build: .
+    container_name: ames-frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./app.py:/app/app.py
+    environment:
+      - BACKEND_URL=http://predictor:8000
+      - PYTHONUNBUFFERED=1
+    command: streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+    depends_on:
+      predictor:
+        condition: service_healthy
+
+  # Monitoring service - run once on-demand to check drift
+  monitor:
+    build: .
+    container_name: ames-monitor
+    volumes:
+      - ./mlruns:/app/mlruns
+      - ./logs:/app/logs
+    command: python src/monitor.py once
+    depends_on:
+      - predictor
+    profiles:
+      - monitor
+
+  # MLflow Tracking UI
+  mlflow-ui:
+    build: .
+    container_name: ames-mlflow-ui
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./mlruns:/app/mlruns
+    command: mlflow ui --host 0.0.0.0 --port 5001 --backend-store-uri file:./mlruns
+    profiles:
+      - mlflow-ui

@@ -1,0 +1,17 @@
+# Virtual Environment
+env/
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# MLops / Logs / Temp files
+mlruns/
+catboost_info/
+logs/
+.DS_Store
